@@ -1,5 +1,4 @@
 admin_tools
-afk
 autoprofile
 b_emoji
 forward
@@ -11,7 +10,7 @@ lydia
 lyrics
 misc
 mock
-nopm
+dnd
 notes
 purge
 quicktype
@@ -21,12 +20,14 @@ spam
 speedtest
 stickers
 terminal
-transfersh
 translate
 tts
 typer
 urbandictionary
 userinfo
 weather
-xda
 yesno
+tag
+filters
+poto
+stickerdumper
