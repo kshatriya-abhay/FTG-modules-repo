@@ -6,7 +6,6 @@ google
 info
 insult
 lmgtfy
-lydia
 lyrics
 misc
 mock
@@ -30,3 +29,5 @@ tag
 filters
 poto
 stickerdumper
+iplookup
+deepfryer
