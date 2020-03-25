@@ -1,4 +1,4 @@
- # -*- coding: future_fstrings -*-
+# -*- coding: future_fstrings -*-
 
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
@@ -17,17 +17,20 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .. import loader, utils
-
+import functools
+from telethon import events
 import logging
-from telethon import functions, types
-from userbot import BOTLOG_CHATID
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("FilterModule")
+
 
 def register(cb):
     cb(Filters())
 
+
 class Filters(loader.Module):
-    """Provides a message saying that you are unavailable (out of office)"""
+    """When you filter a text, it auto responds to it if a user triggers the word)"""
+
     def __init__(self):
         self.name = _("Filters")
         self._me = None
@@ -37,94 +40,104 @@ class Filters(loader.Module):
         self._db = db
         self._client = client
         self._me = await client.get_me()
-        
+        if "Filters.watchout" not in str(client.list_event_handlers()):
+            client.add_event_handler(
+                functools.partial(self.watchout),
+                events.NewMessage(outgoing=True, incoming=True, forwards=False))
+
     async def filtercmd(self, message):
-        """ADDS A FILTER INTO THE LIST"""
-        filtern = utils.get_args_raw(message)
-        getr = await message.get_reply_message()
-        chatid = message.chat_id
-        filters = self._db.get(__name__, "filters")
-        if not filters or str(list(filters)).find(str(chatid)) == -1:
-        	filters = {chatid: {}}
-        if not getr:
-        	await message.reply("<code>Reply to a message first!</code>")
-        	return
-        while filtern.strip() == (""):
-        	await message.edit("<code>Please type a name for the filter.</code>")
-        	return
-        filterv = getr.text
-        if getr.media:
-        	if BOTLOG_CHATID:
-        		fwd = await self._client.forward_messages(BOTLOG_CHATID, getr, message.chat_id, silent=True)
-        		filters[chatid][filtern] = fwd.id
-        		self._db.set(__name__, "filters", filters)
-        	else:
-        		filters[chatid][filtern] = getr.id
-        		self._db.set(__name__, "filters", filters)
-        	await message.edit("<code>Filter '" + filtern + "' successfully saved into the list.</code>")	
-        	return
-        elif not filterv:
-        	await message.edit("<code>Please reply to a message to save as filter.</code>")
-        	return
-        filters[chatid][filtern] = filterv
-        self._db.set(__name__, "filters", filters)
-        await message.edit("<code>Filter '" + filtern + "' successfully added into filters.</code>")
-        	
-    async def stopcmd(self, message):
-        """REMOVES A FILTER FROM THE LIST"""
-        filtern = utils.get_args_raw(message)
-        filters = self._db.get(__name__, "filters")
-        chatid = message.chat_id
-        while filtern.strip() == "" or not filtern:
-        	await message.edit("<code>Please specify the name of the filter.</code>")
-        	return
-        try:
-        	del filters[chatid][filtern]
-        	await message.edit("<code>Filter '" + filtern + "' successfully removed from the list.</code>")
-        	self._db.set(__name__, "filters", filters)
-        except:
-        	await message.edit("<code>Filter '" + filtern + "' not found in filters list</code>")
-        
-    async def stopallcmd(self, message):
-        """CLEARS OUT THE FILTER LIST"""
-        filters = self._db.get(__name__, "filters")
-        chatid = message.chat_id
-        try:
-        	del filters[chatid]
-        	self._db.set(__name__, "filters", filters)
-        	await message.edit("<code>All filters successfully removed from the list.</code>")
-        except:
-        	await message.edit("<code>Filters couldn't be cleared out</code>")
-        	    	
-    async def filterscmd(self, message):
-        """SHOWS SAVED FILTERs"""
-        filters = ""
-        filt = self._db.get(__name__, "filters")
-        chatid = message.chat_id
-        try:
-        	for i in filt[chatid]:
-        		filters += "  »  <b>" + str(i) + "</b>\n"
-        		pass
-        except: pass
-        filterl = "<code>Filters that you saved in this chat: </code>\n\n" + filters
-        if filters.strip() != "":
-        	await message.edit(filterl)
+        """Adds a filter into the list."""
+        args = utils.get_args_split_by(message, ",")
+        chatid = str(message.chat_id)
+        filters = self._db.get("FilterModule", "filters", {})
+        if not args:
+            await message.edit(_("<b>Enter a name for the filter first!</b>"))
+            return
+        name = args[0]
+        if chatid not in filters:
+            filters.setdefault(chatid, {})
+        if not message.is_reply:
+            if len(args) == 1:
+                await message.edit(_("<b>Please reply to a message or enter a text to save as filter.!</b>"))
+                return
+            else:
+                value = args[1]
+                msg_to_log = await self._db.store_asset(value)
         else:
-        	await message.edit('<code>No filters found in this chat.</code>')
-        	
-    async def watcher(self, message):
-    	args = message.text
-    	filters = self._db.get(__name__, "filters")
-    	if getattr(message.to_id, "user_id", None) != message.from_id and filters:
-    		chatid = message.chat_id
-    		for i in range(len(filters)):
-    			if str(list(filters)[0]).find(str(chatid)) != -1 and args.find(str(list(filters[chatid])[i])) != -1:
-    				val = filters[chatid][list(filters[chatid])[i]]
-    				try:
-    					if BOTLOG_CHATID:
-    						await self._client.forward_messages(chatid, val, BOTLOG_CHATID, silent=True)
-    					else:
-    						await self._client.forward_messages(chatid, val, chatid, silent=True)
-    				except:
-    					await message.reply(val)
-    				return
+            value = await message.get_reply_message()
+            msg_to_log = await self._db.store_asset(value)
+        filters[chatid][name] = msg_to_log
+        self._db.set("FilterModule", "filters", filters)
+        await message.edit(_(
+            "<b>Successfully filtered.</b>".format(name)))
+        message.message = ""
+
+    async def stopcmd(self, message):
+        """Removes a filter from the list."""
+        filtern = utils.get_args_raw(message)
+        filters = self._db.get("FilterModule", "filters", {})
+        chatid = str(message.chat_id)
+        if not filtern:
+            await message.edit(_("<b>Please specify the name of the filter.</b>"))
+            return
+        try:
+            del filters[chatid][filtern]
+            await message.edit(_("<b>Filter </b><i>{}</i><b> successfully removed from the chat.</b>".format(filtern)))
+            self._db.set("FilterModule", "filters", filters)
+        except KeyError:
+            await message.edit(_("<b>Filter </b><i>{}</i><b> not found in this chat</b>".format(filtern)))
+
+    async def stopallcmd(self, message):
+        """Clears out the filter list."""
+        filters = self._db.get("FilterModule", "filters", {})
+        chatid = str(message.chat_id)
+        try:
+            del filters[chatid]
+            self._db.set("FilterModule", "filters", filters)
+            await message.edit(_("<b>All filters successfully removed from the chat.</b>"))
+        except KeyError:
+            await message.edit(_("<b>There are no filters to clear out in this chat.</b>"))
+
+    async def filterscmd(self, message):
+        """Shows saved filters."""
+        filters = ""
+        filt = self._db.get("FilterModule", "filters", {})
+        chatid = str(message.chat_id)
+        try:
+            for i in filt[chatid]:
+                filters += "<b> -  " + str(i) + "</b>\n"
+                pass
+        except Exception:
+            pass
+        filterl = "<b>Word(s) that you filtered in this chat: </b>\n\n{}".format(filters)
+        if filters:
+            await message.edit(filterl)
+        else:
+            await message.edit(_("<b>No filters found in this chat.</b>"))
+
+    async def watchout(self, message):
+        filters = self._db.get("FilterModule", "filters", {})
+        args = message.text.split(" ")
+        exec = True
+        chatid = str(message.chat_id)
+        if chatid not in str(filters):
+            return
+        for key in filters[chatid]:
+            if key in args:
+                id = filters[chatid][key]
+                value = await self._db.fetch_asset(id)
+                if not value.media and not value.web_preview:
+                    if value.text.startswith(".") is True:
+                        arg = value.text[1::]
+                    if value.text.startswith("..") is True:
+                        arg = value.text[2::]
+                    if value.text.startswith(".") is False:
+                        arg = value.text
+                        exec = False
+                    respond = await message.respond(arg)
+                    if exec is True:
+                        argspr = arg.split(" ")
+                        respond.message, cmd = self.allmodules.dispatch(argspr[0], respond)
+                        await cmd(respond)
+                else:
+                    await message.reply(value)
