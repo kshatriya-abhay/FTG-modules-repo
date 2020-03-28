@@ -307,7 +307,7 @@ class DoNotDisturb(loader.Module):
                 return
             elif pmlimit_arg == "on":
                 self._db.set(__name__, "pm_limit", True)
-                pmlimit_on = self.strings["pm_limit_on"].format(self.get_current_limit())
+                pmlimit_on = self.strings["pm_limit_on"].format(self.get_current_pm_limit())
                 await utils.answer(message, pmlimit_on)
                 return
             elif pmlimit_arg == "reset":
