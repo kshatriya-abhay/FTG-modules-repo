@@ -1,6 +1,7 @@
 admin_tools
 autoprofile
 b_emoji
+dice
 forward
 google
 info
