@@ -35,3 +35,4 @@ iplookup
 deepfryer
 xda
 lydia
+transfersh
