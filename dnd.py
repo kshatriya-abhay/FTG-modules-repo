@@ -66,7 +66,7 @@ class DoNotDisturb(loader.Module):
                "pm_go_away": ("Hey there! Unfortunately, I don't accept private messages from strangers."
                               "\n\nPlease contact me in a group, or <b>wait</b> for me to approve you."),
                "pm_reported": "<b>You just got reported to spam !</b>",
-               "pm_limit_arg": "<b>Argument must be 'off', 'on' or a number between 10 and 1000 !</b>",
+               "pm_limit_arg": "<b>Argument must be 'off', 'on' or a number between 5 and 1000 !</b>",
                "pm_limit_off": "<b>Not allowed users are now free to PM without be automatically blocked.</b>",
                "pm_limit_on": "<b>Not allowed users are now blocked after {} PMs.</b>",
                "pm_limit_current": "<b>Current limit is {}.</b>",
@@ -102,17 +102,17 @@ class DoNotDisturb(loader.Module):
         self._client = client
         self._me = await client.get_me(True)
 
-    async def afkbackcmd(self, message):
+    async def unafkcmd(self, message):
         """Remove the AFK status.\n """
         self._db.set(__name__, "afk", False)
         self._db.set(__name__, "afk_gone", None)
         self._db.set(__name__, "afk_rate", [])
         await utils.answer(message, self.strings["afk_back"])
 
-    async def afkgocmd(self, message):
+    async def afkcmd(self, message):
         """
-        .afkgo : Enable AFK status.
-        .afkgo [message] : Enable AFK status and add a reason.
+        .afk : Enable AFK status.
+        .afk [message] : Enable AFK status and add a reason.
          
         """
         if utils.get_args_raw(message):
@@ -318,7 +318,7 @@ class DoNotDisturb(loader.Module):
             else:
                 try:
                     pmlimit_number = int(pmlimit_arg)
-                    if pmlimit_number >= 10 and pmlimit_number <= 1000:
+                    if pmlimit_number >= 5 and pmlimit_number <= 1000:
                         self._db.set(__name__, "pm_limit_max", pmlimit_number)
                         pmlimit_new = self.strings["pm_limit_set"].format(self.get_current_pm_limit())
                         await utils.answer(message, pmlimit_new)
@@ -403,7 +403,7 @@ class DoNotDisturb(loader.Module):
                     pms = self._db.get(__name__, "pms", {})
                     pm_limit = self._db.get(__name__, "pm_limit_max")
                     pm_user = pms.get(message.from_id, 0)
-                    if isinstance(pm_limit, int) and pm_limit >= 10 and pm_limit <= 1000 and pm_user >= pm_limit:
+                    if isinstance(pm_limit, int) and pm_limit >= 5 and pm_limit <= 1000 and pm_user >= pm_limit:
                         await utils.answer(message, self.strings["pm_triggered"])
                         await message.client(functions.contacts.BlockRequest(message.from_id))
                         await message.client(functions.messages.ReportSpamRequest(peer=message.from_id))
@@ -439,8 +439,8 @@ class DoNotDisturb(loader.Module):
             elif afk_status is not False:
                 afk_message = self.strings["afk_reason"].format(diff, afk_status)
             await utils.answer(message, afk_message)
-            _notif = self._db.get(__name__, "_notif")
-            if _notif is None or _notif is False:
+            afk_notif = self._db.get(__name__, "afk_notif")
+            if afk_notif is None or afk_notif is False:
                 await message.client.send_read_acknowledge(message.chat_id)
 
     def get_allowed(self, id):
@@ -448,7 +448,7 @@ class DoNotDisturb(loader.Module):
 
     def get_current_pm_limit(self):
         pm_limit = self._db.get(__name__, "pm_limit_max")
-        if not isinstance(pm_limit, int) or pm_limit < 10 or pm_limit > 1000:
+        if not isinstance(pm_limit, int) or pm_limit < 5 or pm_limit > 1000:
             pm_limit = self.default_pm_limit
             self._db.set(__name__, "pm_limit_max", pm_limit)
         return pm_limit
