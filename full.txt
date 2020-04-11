@@ -9,8 +9,8 @@ insult
 lmgtfy
 lyrics
 misc
-mock
 dnd
+memes
 notes
 purge
 quicktype
@@ -35,3 +35,5 @@ iplookup
 deepfryer
 xda
 lydia
+transfersh
+corona

@@ -8,8 +8,8 @@ insult
 lmgtfy
 lyrics
 misc
-mock
 dnd
+memes
 notes
 purge
 quicktype

@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# requires: pyfiglet
+
 from .. import loader, utils
 import logging
 import random
@@ -35,6 +37,8 @@ class MockMod(loader.Module):
                "figlet_args": "<b>Supply a font and some text to render with figlet</b>",
                "no_font": "<b>Font not found</b>",
                "uwu_args": "<b>I nyeed some text fow the nyeko.</b>",
+               "clap_args": "<b>Haha, I don't clap for nothing!",
+               "vapor_args": "<b>You can't vaporize nothing, can you?</b>",
                "shout_args": "<b>You can't shout nothing.</b>"}
 
     def config_complete(self):
@@ -97,6 +101,39 @@ class MockMod(loader.Module):
         reply_text = re.sub(r"N([aeiouAEIOU])", r"Ny\1", reply_text)
         reply_text = reply_text.replace("ove", "uv")
         await message.edit(reply_text)
+
+    async def clapcmd(self, message):
+        """Use in reply to another message or as .clap <text>"""
+        text = utils.get_args_raw(message.message)
+        if not text:
+            if message.is_reply:
+                text = (await message.get_reply_message()).message
+            else:
+                await utils.answer(message, self.strings["clap_args"])
+                return
+        clapped_text = re.sub(" ", " 👏 ", text)
+        reply_text = "👏 {} 👏".format(clapped_text)
+        await utils.answer(message, reply_text)
+
+    async def vaporcmd(self, message):
+        """Use in reply to another message or as .vapor <text>"""
+        text = utils.get_args_raw(message.message)
+        if not text:
+            if message.is_reply:
+                text = (await message.get_reply_message()).message
+            else:
+                await utils.answer(message, self.strings["vapor_args"])
+                return
+        reply_text = list()
+        for char in text:
+            if 0x21 <= ord(char) <= 0x7F:
+                reply_text.append(chr(ord(char) + 0xFEE0))
+            elif ord(char) == 0x20:
+                reply_text.append(chr(0x3000))
+            else:
+                reply_text.append(char)
+        vaporized_text = "".join(reply_text)
+        await utils.answer(message, vaporized_text)
 
     async def shoutcmd(self, message):
         """.shout <text> makes the text massive"""
