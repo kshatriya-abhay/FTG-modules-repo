@@ -12,6 +12,7 @@ misc
 dnd
 memes
 notes
+orangefox
 purge
 quicktype
 quotes
