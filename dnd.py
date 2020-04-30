@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    By Magical Unicorn (based on official Anti PM & AFK Friendly Telegram modules)
 #    Copyright (C) 2020 Magical Unicorn
