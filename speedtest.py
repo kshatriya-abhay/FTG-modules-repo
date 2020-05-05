@@ -28,14 +28,22 @@ def register(cb):
     cb(SpeedtestMod())
 
 
+@loader.tds
 class SpeedtestMod(loader.Module):
     """Uses speedtest.net"""
-    def __init__(self):
-        self.name = _("Speedtest")
+    strings = {"name": "Speedtest",
+               "running": "<b>Running speedtest...</b>",
+               "results": "<b>Speedtest Results:</b>",
+               "results_download": "<b>Download:</b> <code>{}</code> <b>MiB/s</b>",
+               "results_upload": "<b>Upload:</b> <code>{}</code> <b>MiB/s</b>",
+               "results_ping": "<b>Ping:</b> <code>{}</code> <b>ms</b>"}
+
+    def config_complete(self):
+        self.name = self.strings["name"]
 
     async def speedtestcmd(self, message):
         """Tests your internet speed"""
-        await utils.answer(message, _("<code>Running speedtest...</code>"))
+        await utils.answer(message, self.strings["running"])
         args = utils.get_args(message)
         servers = []
         for server in args:
@@ -44,10 +52,10 @@ class SpeedtestMod(loader.Module):
             except ValueError:
                 logger.warning("server failed")
         results = await utils.run_sync(self.speedtest, servers)
-        ret = _("<b>Speedtest Results:</b>") + "\n\n"
-        ret += _("<b>Download:</b> <code>{} MiB/s</code>").format(round(results["download"] / 2**20, 2)) + "\n"
-        ret += _("<b>Upload:</b> <code>{} MiB/s</code>").format(round(results["upload"] / 2**20, 2)) + "\n"
-        ret += _("<b>Ping:</b> <code>{} milliseconds</code>").format(round(results["ping"], 2)) + "\n"
+        ret = self.strings["results"] + "\n\n"
+        ret += self.strings["results_download"].format(round(results["download"] / 2**20, 2)) + "\n"
+        ret += self.strings["results_upload"].format(round(results["upload"] / 2**20, 2)) + "\n"
+        ret += self.strings["results_ping"].format(round(results["ping"], 2)) + "\n"
         await utils.answer(message, ret)
 
     def speedtest(self, servers):

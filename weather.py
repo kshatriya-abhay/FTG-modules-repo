@@ -33,7 +33,7 @@ def register(cb):
 
 def deg_to_text(deg):
     if deg is None:
-        return _("unknown")
+        return None
     return ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW",
             "SW", "WSW", "W", "WNW", "NW", "NNW"][round(deg / 22.5) % 16]
 
@@ -42,23 +42,34 @@ def round_to_sf(n, digits):
     return round(n, digits - 1 - int(math.floor(math.log10(abs(n)))))
 
 
+@loader.tds
 class WeatherMod(loader.Module):
     """Checks the weather
        Get an API key at https://openweathermap.org/appid"""
+    strings = {"name": "Weather",
+               "provide_api": "<b>Please provide an API key via the configuration mode.</b>",
+               "invalid_temp_units": "<b>Invalid temperature units provided. Please reconfigure the module.</b>",
+               "doc_default_loc": "OpenWeatherMap City ID",
+               "doc_api_key": "API Key from https://openweathermap.org/appid",
+               "doc_temp_units": "Temperature unit as English",
+               "result": "<b>Weather in {loc} is {w} with a high of {high} and a low"
+                         " of {low}, averaging at {avg} with {humid}% humidity and a {ws}mph {wd} wind.</b>",
+               "unknown": "unknown"}
+
     def __init__(self):
-        self.config = loader.ModuleConfig("DEFAULT_LOCATION", None, "OpenWeatherMap City ID",
-                                          "API_KEY", None, "API Key from https://openweathermap.org/appid",
-                                          "TEMP_UNITS", "celsius", "Temperature unit as English")
-        self.name = _("Weather")
+        self.config = loader.ModuleConfig("DEFAULT_LOCATION", None, lambda: self.strings["doc_default_loc"],
+                                          "API_KEY", None, lambda: self.strings["doc_api_key"],
+                                          "TEMP_UNITS", "celsius", lambda: self.strings["doc_temp_units"])
         self._owm = None
 
     def config_complete(self):
         self._owm = pyowm.OWM(self.config["API_KEY"])
+        self.name = self.strings["name"]
 
     async def weathercmd(self, message):
         """.weather [location]"""
         if self.config["API_KEY"] is None:
-            await message.edit(_("<code>Please provide an API key via the configuration mode.</code>"))
+            await utils.answer(message, self.strings["provide_api"])
             return
         args = utils.get_args_raw(message)
         func = None
@@ -83,18 +94,18 @@ class WeatherMod(loader.Module):
         logger.debug(func)
         logger.debug(args)
         w = await utils.run_sync(func, *args)
-        logger.debug(_("Weather at {args} is {w}").format(args=args, w=w))
+        logger.debug("Weather at %r is %r", args, w)
         try:
             weather = w.get_weather()
             temp = weather.get_temperature(self.config["TEMP_UNITS"])
         except ValueError:
-            await message.edit(_("<code>Invalid temperature units provided. Please reconfigure the module.</code>"))
+            await utils.answer(message, self.strings["invalid_temp_units"])
             return
-        ret = _("<code>Weather in {loc} is {w} with a high of {high} and a low of {low}, "
-                + "averaging at {avg} with {humid}% humidity and a {ws}mph {wd} wind.")
-        ret = ret.format(loc=eh(w.get_location().get_name()), w=eh(w.get_weather().get_detailed_status().lower()),
-                         high=eh(temp["temp_max"]), low=eh(temp["temp_min"]), avg=eh(temp["temp"]),
-                         humid=eh(weather.get_humidity()),
-                         ws=eh(round_to_sf(weather.get_wind("miles_hour")["speed"], 3)),
-                         wd=eh(deg_to_text(weather.get_wind().get("deg", None))))
-        await message.edit(ret)
+        ret = self.strings["result"].format(loc=eh(w.get_location().get_name()),
+                                            w=eh(w.get_weather().get_detailed_status().lower()),
+                                            high=eh(temp["temp_max"]), low=eh(temp["temp_min"]), avg=eh(temp["temp"]),
+                                            humid=eh(weather.get_humidity()),
+                                            ws=eh(round_to_sf(weather.get_wind("miles_hour")["speed"], 3)),
+                                            wd=eh(deg_to_text(weather.get_wind().get("deg", None))
+                                                  or self.strings["unknown"]))
+        await utils.answer(message, ret)

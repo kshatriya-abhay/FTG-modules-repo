@@ -25,16 +25,20 @@ def register(cb):
 @loader.tds
 class YesNoMod(loader.Module):
     """Helps you make important life choices"""
-    strings = {"name": "YesNo"}
+    strings = {"name": "YesNo",
+               "doc_yes_words": "Yes words",
+               "doc_no_words": "No words"}
 
     def __init__(self):
+        self.config = loader.ModuleConfig(
+            "YES_WORDS", ["Yes", "Yup", "Absolutely", "Non't"], lambda: self.strings["doc_yes_words"],
+            "NO_WORDS", ["No", "Nope", "Nah", "Yesn't"], lambda: self.strings["doc_no_words"])
         self.name = self.strings["name"]
 
     async def yesnocmd(self, message):
         """Make a life choice"""
-        # TODO translate
-        yes = ["Yes", "Yup", "Absolutely", "Non't"]
-        no = ["No", "Nope", "Nah", "Yesn't"]
+        yes = self.config["YES_WORDS"]
+        no = self.config["NO_WORDS"]
         if random.getrandbits(1):
             response = random.choice(yes)
         else:
