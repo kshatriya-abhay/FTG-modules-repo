@@ -38,10 +38,6 @@ from telethon.tl.types import DocumentAttributeFilename
 from .. import loader
 
 
-def register(cb):
-    cb(DeepfryerMod())
-
-
 class DeepfryerMod(loader.Module):
     """Module for frying images/stickers"""
     def __init__(self):

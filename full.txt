@@ -13,6 +13,7 @@ dnd
 memes
 notes
 orangefox
+pmlog
 purge
 quicktype
 quotes

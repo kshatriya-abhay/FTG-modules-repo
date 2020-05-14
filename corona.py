@@ -26,8 +26,6 @@ from .. import loader, utils
 
 logger = logging.getLogger(__name__)
 
-def register(cb):
-    cb(CoronaReportsMod())
 
 class CoronaReportsMod(loader.Module):
     """Gets the latest COVID-19 data found in JHU database for a country"""

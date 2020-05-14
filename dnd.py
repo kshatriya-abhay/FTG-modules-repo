@@ -22,11 +22,8 @@ import datetime
 import time
 
 from telethon import functions, types
+
 logger = logging.getLogger(__name__)
-
-
-def register(cb):
-    cb(DoNotDisturb())
 
 
 @loader.tds
@@ -91,9 +88,6 @@ class DoNotDisturb(loader.Module):
     def __init__(self):
         self._me = None
         self.default_pm_limit = 50
-
-    def config_complete(self):
-        self.name = self.strings["name"]
 
     async def client_ready(self, client, db):
         self._db = db

@@ -23,10 +23,6 @@ from .. import loader, utils
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(GetPPMod())
-
-
 class GetPPMod(loader.Module):
     """Description for module"""
     def __init__(self):

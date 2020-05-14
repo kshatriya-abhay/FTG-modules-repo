@@ -3,8 +3,6 @@ from .. import loader, utils
 
 from asyncio import sleep
 
-def register(cb):
-    cb(dumpsticker())
 
 class dumpsticker(loader.Module):
     """Description for module"""

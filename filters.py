@@ -23,11 +23,7 @@ import logging
 
 logger = logging.getLogger("FilterModule")
 
-
-def register(cb):
-    cb(Filters())
-
-
+    
 class Filters(loader.Module):
     """When you filter a text, it auto responds to it if a user triggers the word)"""
 

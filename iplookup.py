@@ -7,10 +7,6 @@ from .. import loader, utils
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(IPLookup())
-
-
 @loader.tds
 class IPLookup(loader.Module):
     """IP lookup using ip-api.com"""
