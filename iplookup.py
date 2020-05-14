@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 @loader.tds
-class IPLookup(loader.Module):
+class IPLookupMod(loader.Module):
     """IP lookup using ip-api.com"""
     strings = {"name": "IP Lookup"}
 

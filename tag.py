@@ -29,7 +29,7 @@ def register(cb):
 
 
 @loader.tds
-class Tag(loader.Module):
+class TagMod(loader.Module):
     """
     Tag :
     -> Tag all admins (fast way to report).

@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
 
@@ -25,8 +23,7 @@ logger = logging.getLogger(__name__)
 
 class GetPPMod(loader.Module):
     """Description for module"""
-    def __init__(self):
-        self.name = _("Profile Photos")
+    strings = {"name": "Profile Photos"}
 
     async def client_ready(self, client, db):
         self.client = client

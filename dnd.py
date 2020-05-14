@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @loader.tds
-class DoNotDisturb(loader.Module):
+class DoNotDisturbMod(loader.Module):
     """
     DND (Do Not Disturb) :
     -> Prevents people sending you unsolicited private messages.

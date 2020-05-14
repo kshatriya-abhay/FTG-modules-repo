@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2020 The Authors
 
@@ -29,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 class CoronaReportsMod(loader.Module):
     """Gets the latest COVID-19 data found in JHU database for a country"""
+    strings = {"name": "Corona"}
     def __init__(self):
-        self.config = loader.ModuleConfig("DEFAULT_COUNTRY", _("spain"),
+        self.config = loader.ModuleConfig("DEFAULT_COUNTRY", ("spain"),
                                           "Enter your default country here")
-        self.name = _("Corona")
 
     async def coronacmd(self, message):
         """.corona <country (Optional)>"""

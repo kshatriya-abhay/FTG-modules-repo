@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
 
@@ -23,12 +21,13 @@ import logging
 
 logger = logging.getLogger("FilterModule")
 
-    
-class Filters(loader.Module):
+
+@loader.tds
+class FiltersMod(loader.Module):
     """When you filter a text, it auto responds to it if a user triggers the word)"""
+    strings = {"name": "Filters"}
 
     def __init__(self):
-        self.name = _("Filters")
         self._me = None
         self._ratelimit = []
 
@@ -47,14 +46,14 @@ class Filters(loader.Module):
         chatid = str(message.chat_id)
         filters = self._db.get("FilterModule", "filters", {})
         if not args:
-            await message.edit(_("<b>Enter a name for the filter first!</b>"))
+            await message.edit(("<b>Enter a name for the filter first!</b>"))
             return
         name = args[0]
         if chatid not in filters:
             filters.setdefault(chatid, {})
         if not message.is_reply:
             if len(args) == 1:
-                await message.edit(_("<b>Please reply to a message or enter a text to save as filter.!</b>"))
+                await message.edit(("<b>Please reply to a message or enter a text to save as filter.!</b>"))
                 return
             else:
                 value = args[1]
@@ -64,7 +63,7 @@ class Filters(loader.Module):
             msg_to_log = await self._db.store_asset(value)
         filters[chatid][name] = msg_to_log
         self._db.set("FilterModule", "filters", filters)
-        await message.edit(_(
+        await message.edit((
             "<b>Successfully filtered.</b>".format(name)))
         message.message = ""
 
@@ -74,14 +73,14 @@ class Filters(loader.Module):
         filters = self._db.get("FilterModule", "filters", {})
         chatid = str(message.chat_id)
         if not filtern:
-            await message.edit(_("<b>Please specify the name of the filter.</b>"))
+            await message.edit(("<b>Please specify the name of the filter.</b>"))
             return
         try:
             del filters[chatid][filtern]
-            await message.edit(_("<b>Filter </b><i>{}</i><b> successfully removed from the chat.</b>".format(filtern)))
+            await message.edit(("<b>Filter </b><i>{}</i><b> successfully removed from the chat.</b>".format(filtern)))
             self._db.set("FilterModule", "filters", filters)
         except KeyError:
-            await message.edit(_("<b>Filter </b><i>{}</i><b> not found in this chat</b>".format(filtern)))
+            await message.edit(("<b>Filter </b><i>{}</i><b> not found in this chat</b>".format(filtern)))
 
     async def stopallcmd(self, message):
         """Clears out the filter list."""
@@ -90,9 +89,9 @@ class Filters(loader.Module):
         try:
             del filters[chatid]
             self._db.set("FilterModule", "filters", filters)
-            await message.edit(_("<b>All filters successfully removed from the chat.</b>"))
+            await message.edit(("<b>All filters successfully removed from the chat.</b>"))
         except KeyError:
-            await message.edit(_("<b>There are no filters to clear out in this chat.</b>"))
+            await message.edit(("<b>There are no filters to clear out in this chat.</b>"))
 
     async def filterscmd(self, message):
         """Shows saved filters."""
@@ -109,7 +108,7 @@ class Filters(loader.Module):
         if filters:
             await message.edit(filterl)
         else:
-            await message.edit(_("<b>No filters found in this chat.</b>"))
+            await message.edit(("<b>No filters found in this chat.</b>"))
 
     async def watchout(self, message):
         filters = self._db.get("FilterModule", "filters", {})
