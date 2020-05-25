@@ -33,7 +33,7 @@ class DoNotDisturbMod(loader.Module):
     -> Prevents people sending you unsolicited private messages.
     -> Prevents disturbing when you are unavailable.\n
     Commands :
-     
+     
     """
     strings = {"name": "DND",
                "afk": "<b>I'm AFK right now (since</b> <i>{}</i> <b>ago).</b>",
@@ -95,7 +95,7 @@ class DoNotDisturbMod(loader.Module):
         self._me = await client.get_me(True)
 
     async def unafkcmd(self, message):
-        """Remove the AFK status.\n """
+        """Remove the AFK status.\n """
         self._db.set(__name__, "afk", False)
         self._db.set(__name__, "afk_gone", None)
         self._db.set(__name__, "afk_rate", [])
@@ -105,7 +105,7 @@ class DoNotDisturbMod(loader.Module):
         """
         .afk : Enable AFK status.
         .afk [message] : Enable AFK status and add a reason.
-         
+         
         """
         if utils.get_args_raw(message):
             self._db.set(__name__, "afk", utils.get_args_raw(message))
@@ -120,13 +120,13 @@ class DoNotDisturbMod(loader.Module):
         .afknogroup : Disable/Enable AFK status message for group chats.
         .afknogroup off : Enable AFK status message for group chats.
         .afknogroup on : Disable AFK status message for group chats.
-         
+         
         """
         if utils.get_args_raw(message):
             afknogroup_arg = utils.get_args_raw(message)
             if afknogroup_arg == "off":
                 self._db.set(__name__, "afk_no_group", False)
-                await utils.answer(message, self.strings("afk_no_group_off"])
+                await utils.answer(message, self.strings("afk_no_group_off"))
             elif afknogroup_arg == "on":
                 self._db.set(__name__, "afk_no_group", True)
                 await utils.answer(message, self.strings("afk_no_group_on", message))
@@ -148,7 +148,7 @@ class DoNotDisturbMod(loader.Module):
         .afknopm : Disable/Enable AFK status message for PMs.
         .afknopm off : Enable AFK status message for PMs.
         .afknopm on : Disable AFK status message for PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             afknopm_arg = utils.get_args_raw(message)
@@ -176,7 +176,7 @@ class DoNotDisturbMod(loader.Module):
         .afknotif : Disable/Enable the notifications during AFK time.
         .afknotif off : Disable the notifications during AFK time.
         .afknotif on : Enable the notifications during AFK time.
-         
+         
         """
         if utils.get_args_raw(message):
             afknotif_arg = utils.get_args_raw(message)
@@ -204,7 +204,7 @@ class DoNotDisturbMod(loader.Module):
         .afkrate : Disable/Enable AFK rate limit.
         .afkrate off : Disable AFK rate limit.
         .afkrate on : Enable AFK rate limit. One AFK status message max will be sent per chat.
-         
+         
         """
         if utils.get_args_raw(message):
             afkrate_arg = utils.get_args_raw(message)
@@ -228,7 +228,7 @@ class DoNotDisturbMod(loader.Module):
                 await utils.answer(message, self.strings("unknow", message))
 
     async def allowcmd(self, message):
-        """Allow this user to PM.\n """
+        """Allow this user to PM.\n """
         user = await utils.get_target(message)
         if not user:
             await utils.answer(message, self.strings("who_to_allow", message))
@@ -237,7 +237,7 @@ class DoNotDisturbMod(loader.Module):
         await utils.answer(message, self.strings("pm_allowed", message).format(user))
 
     async def blockcmd(self, message):
-        """Block this user to PM without being warned.\n """
+        """Block this user to PM without being warned.\n """
         user = await utils.get_target(message)
         if not user:
             await utils.answer(message, self.strings("who_to_block", message))
@@ -246,7 +246,7 @@ class DoNotDisturbMod(loader.Module):
         await utils.answer(message, self.strings("pm_blocked", message).format(user))
 
     async def denycmd(self, message):
-        """Deny this user to PM without being warned.\n """
+        """Deny this user to PM without being warned.\n """
         user = await utils.get_target(message)
         if not user:
             await utils.answer(message, self.strings("who_to_deny", message))
@@ -259,7 +259,7 @@ class DoNotDisturbMod(loader.Module):
         .pm : Disable/Enable automatic answer for denied PMs.
         .pm off : Disable automatic answer for denied PMs.
         .pm on : Enable automatic answer for denied PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             pm_arg = utils.get_args_raw(message)
@@ -289,7 +289,7 @@ class DoNotDisturbMod(loader.Module):
         .pmlimit on : Enable automatic user blocking.
         .pmlimit reset : Reset max number of PMs before automatically block not allowed user.
         .pmlimit [number] : Modify max number of PMs before automatically block not allowed user.
-         
+         
         """
         if utils.get_args_raw(message):
             pmlimit_arg = utils.get_args_raw(message)
@@ -338,7 +338,7 @@ class DoNotDisturbMod(loader.Module):
         .pmnotif : Disable/Enable the notifications from denied PMs.
         .pmnotif off : Disable the notifications from denied PMs.
         .pmnotif on : Enable the notifications from denied PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             pmnotif_arg = utils.get_args_raw(message)
@@ -362,7 +362,7 @@ class DoNotDisturbMod(loader.Module):
                 await utils.answer(message, self.strings("unknow", message))
 
     async def reportcmd(self, message):
-        """Report the user to spam. Use only in PM.\n """
+        """Report the user to spam. Use only in PM.\n """
         user = await utils.get_target(message)
         if not user:
             await utils.answer(message, self.strings("who_to_report", message))
