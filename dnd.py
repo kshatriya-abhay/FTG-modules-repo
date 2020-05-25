@@ -33,7 +33,7 @@ class DoNotDisturbMod(loader.Module):
     -> Prevents people sending you unsolicited private messages.
     -> Prevents disturbing when you are unavailable.\n
     Commands :
-     
+     
     """
     strings = {"name": "DND",
                "afk": "<b>I'm AFK right now (since</b> <i>{}</i> <b>ago).</b>",
@@ -95,17 +95,17 @@ class DoNotDisturbMod(loader.Module):
         self._me = await client.get_me(True)
 
     async def unafkcmd(self, message):
-        """Remove the AFK status.\n """
+        """Remove the AFK status.\n """
         self._db.set(__name__, "afk", False)
         self._db.set(__name__, "afk_gone", None)
         self._db.set(__name__, "afk_rate", [])
-        await utils.answer(message, self.strings["afk_back"])
+        await utils.answer(message, self.strings("afk_back", message))
 
     async def afkcmd(self, message):
         """
         .afk : Enable AFK status.
         .afk [message] : Enable AFK status and add a reason.
-         
+         
         """
         if utils.get_args_raw(message):
             self._db.set(__name__, "afk", utils.get_args_raw(message))
@@ -113,174 +113,174 @@ class DoNotDisturbMod(loader.Module):
             self._db.set(__name__, "afk", True)
         self._db.set(__name__, "afk_gone", time.time())
         self._db.set(__name__, "afk_rate", [])
-        await utils.answer(message, self.strings["afk_gone"])
+        await utils.answer(message, self.strings("afk_gone", message))
 
     async def afknogroupcmd(self, message):
         """
         .afknogroup : Disable/Enable AFK status message for group chats.
         .afknogroup off : Enable AFK status message for group chats.
         .afknogroup on : Disable AFK status message for group chats.
-         
+         
         """
         if utils.get_args_raw(message):
             afknogroup_arg = utils.get_args_raw(message)
             if afknogroup_arg == "off":
                 self._db.set(__name__, "afk_no_group", False)
-                await utils.answer(message, self.strings["afk_no_group_off"])
+                await utils.answer(message, self.strings("afk_no_group_off"))
             elif afknogroup_arg == "on":
                 self._db.set(__name__, "afk_no_group", True)
-                await utils.answer(message, self.strings["afk_no_group_on"])
+                await utils.answer(message, self.strings("afk_no_group_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             afknogroup_current = self._db.get(__name__, "afk_no_group")
             if afknogroup_current is None or afknogroup_current is False:
                 self._db.set(__name__, "afk_no_group", True)
-                await utils.answer(message, self.strings["afk_no_group_on"])
+                await utils.answer(message, self.strings("afk_no_group_on", message))
             elif afknogroup_current is True:
                 self._db.set(__name__, "afk_no_group", False)
-                await utils.answer(message, self.strings["afk_no_group_off"])
+                await utils.answer(message, self.strings("afk_no_group_off", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def afknopmcmd(self, message):
         """
         .afknopm : Disable/Enable AFK status message for PMs.
         .afknopm off : Enable AFK status message for PMs.
         .afknopm on : Disable AFK status message for PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             afknopm_arg = utils.get_args_raw(message)
             if afknopm_arg == "off":
                 self._db.set(__name__, "afk_no_pm", False)
-                await utils.answer(message, self.strings["afk_no_pm_off"])
+                await utils.answer(message, self.strings("afk_no_pm_off", message))
             elif afknopm_arg == "on":
                 self._db.set(__name__, "afk_no_pm", True)
-                await utils.answer(message, self.strings["afk_no_pm_on"])
+                await utils.answer(message, self.strings("afk_no_pm_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             afknopm_current = self._db.get(__name__, "afk_no_pm")
             if afknopm_current is None or afknopm_current is False:
                 self._db.set(__name__, "afk_no_pm", True)
-                await utils.answer(message, self.strings["afk_no_pm_on"])
+                await utils.answer(message, self.strings("afk_no_pm_on", message))
             elif afknopm_current is True:
                 self._db.set(__name__, "afk_no_pm", False)
-                await utils.answer(message, self.strings["afk_no_pm_off"])
+                await utils.answer(message, self.strings("afk_no_pm_off", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def afknotifcmd(self, message):
         """
         .afknotif : Disable/Enable the notifications during AFK time.
         .afknotif off : Disable the notifications during AFK time.
         .afknotif on : Enable the notifications during AFK time.
-         
+         
         """
         if utils.get_args_raw(message):
             afknotif_arg = utils.get_args_raw(message)
             if afknotif_arg == "off":
                 self._db.set(__name__, "afk_notif", False)
-                await utils.answer(message, self.strings["afk_notif_off"])
+                await utils.answer(message, self.strings("afk_notif_off", message))
             elif afknotif_arg == "on":
                 self._db.set(__name__, "afk_notif", True)
-                await utils.answer(message, self.strings["afk_notif_on"])
+                await utils.answer(message, self.strings("afk_notif_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             afknotif_current = self._db.get(__name__, "afk_notif")
             if afknotif_current is None or afknotif_current is False:
                 self._db.set(__name__, "afk_notif", True)
-                await utils.answer(message, self.strings["afk_notif_on"])
+                await utils.answer(message, self.strings("afk_notif_on", message))
             elif afknotif_current is True:
                 self._db.set(__name__, "afk_notif", False)
-                await utils.answer(message, self.strings["afk_notif_off"])
+                await utils.answer(message, self.strings("afk_notif_off", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def afkratecmd(self, message):
         """
         .afkrate : Disable/Enable AFK rate limit.
         .afkrate off : Disable AFK rate limit.
         .afkrate on : Enable AFK rate limit. One AFK status message max will be sent per chat.
-         
+         
         """
         if utils.get_args_raw(message):
             afkrate_arg = utils.get_args_raw(message)
             if afkrate_arg == "off":
                 self._db.set(__name__, "afk_rate_limit", False)
-                await utils.answer(message, self.strings["afk_rate_limit_off"])
+                await utils.answer(message, self.strings("afk_rate_limit_off", message))
             elif afkrate_arg == "on":
                 self._db.set(__name__, "afk_rate_limit", True)
-                await utils.answer(message, self.strings["afk_rate_limit_on"])
+                await utils.answer(message, self.strings("afk_rate_limit_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             afkrate_current = self._db.get(__name__, "afk_rate_limit")
             if afkrate_current is None or afkrate_current is False:
                 self._db.set(__name__, "afk_rate_limit", True)
-                await utils.answer(message, self.strings["afk_rate_limit_on"])
+                await utils.answer(message, self.strings("afk_rate_limit_on", message))
             elif afkrate_current is True:
                 self._db.set(__name__, "afk_rate_limit", False)
-                await utils.answer(message, self.strings["afk_rate_limit_off"])
+                await utils.answer(message, self.strings("afk_rate_limit_off", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def allowcmd(self, message):
-        """Allow this user to PM.\n """
+        """Allow this user to PM.\n """
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings["who_to_allow"])
+            await utils.answer(message, self.strings("who_to_allow", message))
             return
         self._db.set(__name__, "allow", list(set(self._db.get(__name__, "allow", [])).union({user})))
-        await utils.answer(message, self.strings["pm_allowed"].format(user))
+        await utils.answer(message, self.strings("pm_allowed", message).format(user))
 
     async def blockcmd(self, message):
-        """Block this user to PM without being warned.\n """
+        """Block this user to PM without being warned.\n """
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings["who_to_block"])
+            await utils.answer(message, self.strings("who_to_block", message))
             return
         await message.client(functions.contacts.BlockRequest(user))
-        await utils.answer(message, self.strings["pm_blocked"].format(user))
+        await utils.answer(message, self.strings("pm_blocked", message).format(user))
 
     async def denycmd(self, message):
-        """Deny this user to PM without being warned.\n """
+        """Deny this user to PM without being warned.\n """
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings["who_to_deny"])
+            await utils.answer(message, self.strings("who_to_deny", message))
             return
         self._db.set(__name__, "allow", list(set(self._db.get(__name__, "allow", [])).difference({user})))
-        await utils.answer(message, self.strings["pm_denied"].format(user))
+        await utils.answer(message, self.strings("pm_denied", message).format(user))
 
     async def pmcmd(self, message):
         """
         .pm : Disable/Enable automatic answer for denied PMs.
         .pm off : Disable automatic answer for denied PMs.
         .pm on : Enable automatic answer for denied PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             pm_arg = utils.get_args_raw(message)
             if pm_arg == "off":
                 self._db.set(__name__, "pm", True)
-                await utils.answer(message, self.strings["pm_off"])
+                await utils.answer(message, self.strings("pm_off", message))
             elif pm_arg == "on":
                 self._db.set(__name__, "pm", False)
-                await utils.answer(message, self.strings["pm_on"])
+                await utils.answer(message, self.strings("pm_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             pm_current = self._db.get(__name__, "pm")
             if pm_current is None or pm_current is False:
                 self._db.set(__name__, "pm", True)
-                await utils.answer(message, self.strings["pm_off"])
+                await utils.answer(message, self.strings("pm_off", message))
             elif pm_current is True:
                 self._db.set(__name__, "pm", False)
-                await utils.answer(message, self.strings["pm_on"])
+                await utils.answer(message, self.strings("pm_on", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def pmlimitcmd(self, message):
         """
@@ -289,22 +289,22 @@ class DoNotDisturbMod(loader.Module):
         .pmlimit on : Enable automatic user blocking.
         .pmlimit reset : Reset max number of PMs before automatically block not allowed user.
         .pmlimit [number] : Modify max number of PMs before automatically block not allowed user.
-         
+         
         """
         if utils.get_args_raw(message):
             pmlimit_arg = utils.get_args_raw(message)
             if pmlimit_arg == "off":
                 self._db.set(__name__, "pm_limit", False)
-                await utils.answer(message, self.strings["pm_limit_off"])
+                await utils.answer(message, self.strings("pm_limit_off", message))
                 return
             elif pmlimit_arg == "on":
                 self._db.set(__name__, "pm_limit", True)
-                pmlimit_on = self.strings["pm_limit_on"].format(self.get_current_pm_limit())
+                pmlimit_on = self.strings("pm_limit_on", message).format(self.get_current_pm_limit())
                 await utils.answer(message, pmlimit_on)
                 return
             elif pmlimit_arg == "reset":
                 self._db.set(__name__, "pm_limit_max", self.default_pm_limit)
-                pmlimit_reset = self.strings["pm_limit_reset"].format(self.get_current_pm_limit())
+                pmlimit_reset = self.strings("pm_limit_reset", message).format(self.get_current_pm_limit())
                 await utils.answer(message, pmlimit_reset)
                 return
             else:
@@ -312,24 +312,24 @@ class DoNotDisturbMod(loader.Module):
                     pmlimit_number = int(pmlimit_arg)
                     if pmlimit_number >= 5 and pmlimit_number <= 1000:
                         self._db.set(__name__, "pm_limit_max", pmlimit_number)
-                        pmlimit_new = self.strings["pm_limit_set"].format(self.get_current_pm_limit())
+                        pmlimit_new = self.strings("pm_limit_set", message).format(self.get_current_pm_limit())
                         await utils.answer(message, pmlimit_new)
                         return
                     else:
-                        await utils.answer(message, self.strings["pm_limit_arg"])
+                        await utils.answer(message, self.strings("pm_limit_arg", message))
                         return
                 except ValueError:
-                    await utils.answer(message, self.strings["pm_limit_arg"])
+                    await utils.answer(message, self.strings("pm_limit_arg", message))
                     return
-            await utils.answer(message, self.strings["limit_arg"])
+            await utils.answer(message, self.strings("limit_arg", message))
         else:
             pmlimit = self._db.get(__name__, "pm_limit")
             if pmlimit is None or pmlimit is False:
-                pmlimit_current = self.strings["pm_limit_current_no"]
+                pmlimit_current = self.strings("pm_limit_current_no", message)
             elif pmlimit is True:
-                pmlimit_current = self.strings["pm_limit_current"].format(self.get_current_pm_limit())
+                pmlimit_current = self.strings("pm_limit_current", message).format(self.get_current_pm_limit())
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
                 return
             await utils.answer(message, pmlimit_current)
 
@@ -338,34 +338,34 @@ class DoNotDisturbMod(loader.Module):
         .pmnotif : Disable/Enable the notifications from denied PMs.
         .pmnotif off : Disable the notifications from denied PMs.
         .pmnotif on : Enable the notifications from denied PMs.
-         
+         
         """
         if utils.get_args_raw(message):
             pmnotif_arg = utils.get_args_raw(message)
             if pmnotif_arg == "off":
                 self._db.set(__name__, "pm_notif", False)
-                await utils.answer(message, self.strings["pm_notif_off"])
+                await utils.answer(message, self.strings("pm_notif_off", message))
             elif pmnotif_arg == "on":
                 self._db.set(__name__, "pm_notif", True)
-                await utils.answer(message, self.strings["pm_notif_on"])
+                await utils.answer(message, self.strings("pm_notif_on", message))
             else:
-                await utils.answer(message, self.strings["arg_on_off"])
+                await utils.answer(message, self.strings("arg_on_off", message))
         else:
             pmnotif_current = self._db.get(__name__, "pm_notif")
             if pmnotif_current is None or pmnotif_current is False:
                 self._db.set(__name__, "pm_notif", True)
-                await utils.answer(message, self.strings["pm_notif_on"])
+                await utils.answer(message, self.strings("pm_notif_on", message))
             elif pmnotif_current is True:
                 self._db.set(__name__, "pm_notif", False)
-                await utils.answer(message, self.strings["pm_notif_off"])
+                await utils.answer(message, self.strings("pm_notif_off", message))
             else:
-                await utils.answer(message, self.strings["unknow"])
+                await utils.answer(message, self.strings("unknow", message))
 
     async def reportcmd(self, message):
-        """Report the user to spam. Use only in PM.\n """
+        """Report the user to spam. Use only in PM.\n """
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings["who_to_report"])
+            await utils.answer(message, self.strings("who_to_report", message))
             return
         self._db.set(__name__, "allow", list(set(self._db.get(__name__, "allow", [])).difference({user})))
         if message.is_reply and isinstance(message.to_id, types.PeerChannel):
@@ -374,29 +374,29 @@ class DoNotDisturbMod(loader.Module):
                                                                   reason=types.InputReportReasonSpam()))
         else:
             await message.client(functions.messages.ReportSpamRequest(peer=message.to_id))
-        await utils.answer(message, self.strings["pm_reported"])
+        await utils.answer(message, self.strings("pm_reported", message))
 
     async def unblockcmd(self, message):
         """Unblock this user to PM."""
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings["who_to_unblock"])
+            await utils.answer(message, self.strings("who_to_unblock"))
             return
         await message.client(functions.contacts.UnblockRequest(user))
-        await utils.answer(message, self.strings["pm_unblocked"].format(user))
+        await utils.answer(message, self.strings("pm_unblocked", message).format(user))
 
     async def watcher(self, message):
         user = await utils.get_user(message)
         pm = self._db.get(__name__, "pm")
         if getattr(message.to_id, "user_id", None) == self._me.user_id and (pm is None or pm is False):
             if not user.is_self and not user.bot and not user.verified and not self.get_allowed(message.from_id):
-                await utils.answer(message, self.strings["pm_go_away"])
+                await utils.answer(message, self.strings("pm_go_away",message))
                 if self._db.get(__name__, "pm_limit") is True:
                     pms = self._db.get(__name__, "pms", {})
                     pm_limit = self._db.get(__name__, "pm_limit_max")
                     pm_user = pms.get(message.from_id, 0)
                     if isinstance(pm_limit, int) and pm_limit >= 5 and pm_limit <= 1000 and pm_user >= pm_limit:
-                        await utils.answer(message, self.strings["pm_triggered"])
+                        await utils.answer(message, self.strings("pm_triggered", message))
                         await message.client(functions.contacts.BlockRequest(message.from_id))
                         await message.client(functions.messages.ReportSpamRequest(peer=message.from_id))
                         del pms[message.from_id]
@@ -427,9 +427,9 @@ class DoNotDisturbMod(loader.Module):
             gone = datetime.datetime.fromtimestamp(self._db.get(__name__, "afk_gone")).replace(microsecond=0)
             diff = now - gone
             if afk_status is True:
-                afk_message = self.strings["afk"].format(diff)
+                afk_message = self.strings("afk", message).format(diff)
             elif afk_status is not False:
-                afk_message = self.strings["afk_reason"].format(diff, afk_status)
+                afk_message = self.strings("afk_reason", message).format(diff, afk_status)
             await utils.answer(message, afk_message)
             afk_notif = self._db.get(__name__, "afk_notif")
             if afk_notif is None or afk_notif is False:
