@@ -380,7 +380,7 @@ class DoNotDisturbMod(loader.Module):
         """Unblock this user to PM."""
         user = await utils.get_target(message)
         if not user:
-            await utils.answer(message, self.strings("who_to_unblock"])
+            await utils.answer(message, self.strings("who_to_unblock"))
             return
         await message.client(functions.contacts.UnblockRequest(user))
         await utils.answer(message, self.strings("pm_unblocked", message).format(user))
