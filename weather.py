@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# requires: pyowm
+# requires: pyowm>=3.0.0
 
 import logging
 import pyowm
@@ -59,13 +59,16 @@ class WeatherMod(loader.Module):
         self._owm = None
 
     def config_complete(self):
-        self._owm = pyowm.OWM(self.config["API_KEY"])
+        if self.config["API_KEY"]:
+            self._owm = pyowm.OWM(self.config["API_KEY"]).weather_manager()
+        else:
+            self._owm = None
 
     @loader.unrestricted
     @loader.ratelimit
     async def weathercmd(self, message):
         """.weather [location]"""
-        if self.config["API_KEY"] is None:
+        if self._owm is None:
             await utils.answer(message, self.strings("provide_api", message))
             return
         args = utils.get_args_raw(message)
