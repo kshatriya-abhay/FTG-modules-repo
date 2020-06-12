@@ -18,23 +18,23 @@ from .. import loader, utils
 import random
 
 
-def register(cb):
-    cb(YesNoMod())
-
-
 @loader.tds
 class YesNoMod(loader.Module):
     """Helps you make important life choices"""
-    strings = {"name": "YesNo"}
+    strings = {"name": "YesNo",
+               "yes_words_cfg_doc": "Yes words",
+               "no_words_cfg_doc": "No words"}
 
     def __init__(self):
-        self.name = self.strings["name"]
+        self.config = loader.ModuleConfig(
+            "YES_WORDS", ["Yes", "Yup", "Absolutely", "Non't"], lambda m: self.strings("yes_words_cfg_doc", m),
+            "NO_WORDS", ["No", "Nope", "Nah", "Yesn't"], lambda m: self.strings("no_words_cfg_doc", m))
 
+    @loader.unrestricted
     async def yesnocmd(self, message):
         """Make a life choice"""
-        # TODO translate
-        yes = ["Yes", "Yup", "Absolutely", "Non't"]
-        no = ["No", "Nope", "Nah", "Yesn't"]
+        yes = self.config["YES_WORDS"]
+        no = self.config["NO_WORDS"]
         if random.getrandbits(1):
             response = random.choice(yes)
         else:

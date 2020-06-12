@@ -24,31 +24,34 @@ import lyricsgenius
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(LyricsMod())
-
-
 @loader.tds
 class LyricsMod(loader.Module):
     """Sings songs"""
     strings = {"name": "Lyrics",
                "genius_api_token_doc": "The LyricsGenius API token from http://genius.com/api-clients",
-               "invalid_syntax": "<code>Please specify song and artist.</code>",
-               "song_not_found": "<code>Song not found.</code>"}
+               "invalid_syntax": "<b>Please specify song and artist.</b>",
+               "song_not_found": "<b>Song not found</b>",
+               "missing_token": "<b>API Token missing</b>"}
 
     def __init__(self):
-        self.config = loader.ModuleConfig("GENIUS_API_TOKEN", None, lambda: self.strings["genius_api_token_doc"])
-        self.name = self.strings["name"]
+        self.config = loader.ModuleConfig("GENIUS_API_TOKEN", None, lambda m: self.strings("genius_api_token_doc", m))
 
     def config_complete(self):
-        self.genius = lyricsgenius.Genius(self.config["GENIUS_API_TOKEN"])
+        if self.config["GENIUS_API_TOKEN"]:
+            self.genius = lyricsgenius.Genius(self.config["GENIUS_API_TOKEN"])
+        else:
+            self.genius = None
 
+    @loader.unrestricted
+    @loader.ratelimit
     async def lyricscmd(self, message):
         """.lyrics Song, Artist"""
+        if self.genius is None:
+            await utils.answer(message, self.strings("missing_token", message))
         args = utils.get_args_split_by(message, ",")
         if len(args) != 2:
             logger.debug(args)
-            await utils.answer(message, self.strings["invalid_syntax"])
+            await utils.answer(message, self.strings("invalid_syntax", message))
             return
         logger.debug("getting song lyrics for " + args[0] + ", " + args[1])
         try:
@@ -57,7 +60,7 @@ class LyricsMod(loader.Module):
             # Song not found causes internal library error
             song = None
         if song is None:
-            await utils.answer(message, self.strings["song_not_found"])
+            await utils.answer(message, self.strings("song_not_found", message))
             return
         logger.debug(song)
         logger.debug(song.lyrics)

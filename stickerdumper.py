@@ -3,13 +3,11 @@ from .. import loader, utils
 
 from asyncio import sleep
 
-def register(cb):
-    cb(dumpsticker())
 
-class dumpsticker(loader.Module):
+@loader.tds
+class StickerDumperMod(loader.Module):
     """Description for module"""
-    def __init__(self):
-        self.name = _("StickerDumper")
+    strings = {"name": "StickerDumper"}
         
     async def getstkrcmd(self, message):
         f = BytesIO()

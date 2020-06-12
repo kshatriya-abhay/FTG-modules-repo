@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
 
@@ -26,16 +24,19 @@ from .. import loader, utils
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(UrbanDictionaryMod())
-
-
+@loader.tds
 class UrbanDictionaryMod(loader.Module):
     """Define word meaning using UrbanDictionary."""
+    strings = {"name": "Urban Dictionary",
+               "provide_word": "<b>Provide a word(s) to define.</b>",
+               "def_error": "<b>Couldn't find definition for that.</b>",
+               "result": "<b>Text</b>: <code>{}</code>\n<b>Meaning</b>: <code>{}\n<b>Example</b>: <code>{}</code>"}
+
     def __init__(self):
-        self.name = _("Urban Dictionary")
         self.urban = asyncurban.UrbanDictionary()
 
+    @loader.unrestricted
+    @loader.ratelimit
     async def urbancmd(self, message):
         """Define word meaning. Usage:
             .urban <word(s)>"""
@@ -43,12 +44,11 @@ class UrbanDictionaryMod(loader.Module):
         args = utils.get_args_raw(message)
 
         if not args:
-            return await utils.answer(message, _("<b>Provide a word(s) to define.</b>"))
+            return await utils.answer(message, self.strings("provide_word", message))
 
         try:
             definition = await self.urban.get_word(args)
         except asyncurban.WordNotFoundError:
-            return await utils.answer(message, _("<b>Couldn't find definition for that.</b>"))
-
-        await utils.answer(message, _("<b>Text</b>: <code>{}</code>\n<b>Meaning</b>: <code>{}\n<b>Example</b>: <code>"
-                                      "{}</code>").format(definition.word, definition.definition, definition.example))
+            return await utils.answer(message, self.strings("def_error", message))
+        result = self.strings("result", message).format(definition.word, definition.definition, definition.example)
+        await utils.answer(message, result)

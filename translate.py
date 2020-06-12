@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
 
@@ -26,21 +24,25 @@ from .. import loader, utils
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(TranslateMod())
-
-
+@loader.tds
 class TranslateMod(loader.Module):
     """Translator"""
+    strings = {"name": "Translator",
+               "translated": "<b>From: </b><code>{from_lang}</code>"
+               "\n<b>To: </b><code>{to_lang}</code>\n\n{output}",
+               "invalid_text": "Invalid text to translate",
+               "doc_default_lang": "Language to translate to by default",
+               "doc_api_key": "API key from https://translate.yandex.com/developers/keys"}
+
     def __init__(self):
-        self.commands = {"translate": self.translatecmd}
-        self.config = loader.ModuleConfig("DEFAULT_LANG", "en", "Language to translate to by default",
-                                          "API_KEY", "", "API key from https://translate.yandex.com/developers/keys")
-        self.name = _("Translator")
+        self.config = loader.ModuleConfig("DEFAULT_LANG", "en", lambda m: self.strings("doc_default_lang", m),
+                                          "API_KEY", "", lambda m: self.strings("doc_api_key", m))
 
     def config_complete(self):
         self.tr = Translate(self.config["API_KEY"])
 
+    @loader.unrestricted
+    @loader.ratelimit
     async def translatecmd(self, message):
         """.translate [from_lang->][->to_lang] <text>"""
         args = utils.get_args(message)
@@ -55,7 +57,7 @@ class TranslateMod(loader.Module):
         if len(text) == 0 and message.is_reply:
             text = (await message.get_reply_message()).message
         if len(text) == 0:
-            await message.edit(_("Invalid text to translate"))
+            await utils.answer(message, self.strings("invalid_text", message))
             return
         if args[0] == "":
             args[0] = self.tr.detect(text)
@@ -69,8 +71,7 @@ class TranslateMod(loader.Module):
         args[0] = args[0].lower()
         logger.debug(args)
         translated = self.tr.translate(text, args[1], args[0])
-        ret = _("<b>Translated </b><code>{text}</code>\n<b>from </b><code>{frlang}</code><b> to </b>"
-                + "<code>{to}</code><b> and it reads</b>\n<code>{output}</code>")
-        ret = ret.format(text=utils.escape_html(text), frlang=utils.escape_html(args[0]),
-                         to=utils.escape_html(args[1]), output=utils.escape_html(translated))
+        ret = self.strings("translated", message).format(from_lang=utils.escape_html(args[0]),
+                                                         to_lang=utils.escape_html(args[1]),
+                                                         output=utils.escape_html(translated))
         await utils.answer(message, ret)

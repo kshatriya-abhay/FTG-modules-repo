@@ -38,14 +38,9 @@ from telethon.tl.types import DocumentAttributeFilename
 from .. import loader
 
 
-def register(cb):
-    cb(DeepfryerMod())
-
-
 class DeepfryerMod(loader.Module):
     """Module for frying images/stickers"""
-    def __init__(self):
-        self.name = _("Deepfryer")
+    strings = {"name": "Deepfryer"}
 
     async def deepfrycmd(self, message):
         """Deepfries an image or sticker, optional fry pass count."""

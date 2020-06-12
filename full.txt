@@ -12,6 +12,8 @@ misc
 dnd
 memes
 notes
+orangefox
+pmlog
 purge
 quicktype
 quotes
@@ -37,3 +39,6 @@ xda
 lydia
 transfersh
 corona
+orangefox
+afk
+nopm

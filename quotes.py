@@ -1,5 +1,3 @@
-# -*- coding: future_fstrings -*-
-
 #    Friendly Telegram (telegram userbot)
 #    Copyright (C) 2018-2019 The Authors
 
@@ -16,6 +14,8 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# requires: Pillow requests
+
 import logging
 import requests
 import base64
@@ -29,10 +29,6 @@ from io import BytesIO
 logger = logging.getLogger(__name__)
 
 
-def register(cb):
-    cb(QuotesMod())
-
-
 @loader.tds
 class QuotesMod(loader.Module):
     """Quote a message."""
@@ -40,7 +36,7 @@ class QuotesMod(loader.Module):
         "name": "Quotes",
         "api_token_cfg_doc": "API Key/Token for Quotes.",
         "api_url_cfg_doc": "API URL for Quotes.",
-        "colors_cfg_doc": "Username colors",
+        "username_colors_cfg_doc": "Username colors",
         "default_username_color_cfg_doc": "Default color for the username.",
         "no_reply": "<b>You didn't reply to a message.</b>",
         "no_template": "<b>You didn't specify the template.</b>",
@@ -59,21 +55,20 @@ class QuotesMod(loader.Module):
     }
 
     def __init__(self):
-        self.config = loader.ModuleConfig("api_token", None, lambda: self.strings["api_token_cfg_doc"],
-                                          "api_url", "http://api.antiddos.systems",
-                                          lambda: self.strings["api_url_cfg_doc"],
-                                          "username_colors", ["#fb6169", "#faa357", "#b48bf2", "#85de85",
+        self.config = loader.ModuleConfig("API_TOKEN", None, lambda m: self.strings("api_token_cfg_doc", m),
+                                          "API_URL", "http://api.antiddos.systems",
+                                          lambda m: self.strings("api_url_cfg_doc", m),
+                                          "USERNAME_COLORS", ["#fb6169", "#faa357", "#b48bf2", "#85de85",
                                                               "#62d4e3", "#65bdf3", "#ff5694"],
-                                          lambda: self.strings["colors_cfg_doc"],
-                                          "default_username_color", "#b48bf2",
-                                          lambda: self.strings["default_username_color_cfg_doc"])
-
-    def config_complete(self):
-        self.name = self.strings["name"]
+                                          lambda m: self.strings("username_colors_cfg_doc", m),
+                                          "DEFAULT_USERNAME_COLOR", "#b48bf2",
+                                          lambda m: self.strings("default_username_color_cfg_doc", m))
 
     async def client_ready(self, client, db):
         self.client = client
 
+    @loader.unrestricted
+    @loader.ratelimit
     async def quotecmd(self, message):  # noqa: C901
         """Quote a message.
         Usage: .quote [template] [file/force_file]
@@ -83,7 +78,7 @@ class QuotesMod(loader.Module):
         reply = await message.get_reply_message()
 
         if not reply:
-            return await utils.answer(message, self.strings["no_reply"])
+            return await utils.answer(message, self.strings("no_reply", message))
 
         username_color = username = admintitle = user_id = None
         profile_photo_url = reply.from_id
@@ -97,22 +92,22 @@ class QuotesMod(loader.Module):
             participants = chat.full_chat.participants.participants
             participant = next(filter(lambda x: x.user_id == reply.from_id, participants), None)
             if isinstance(participant, telethon.tl.types.ChatParticipantCreator):
-                admintitle = self.strings["creator"]
+                admintitle = self.strings("creator", message)
             elif isinstance(participant, telethon.tl.types.ChatParticipantAdmin):
-                admintitle = self.strings["admin"]
+                admintitle = self.strings("admin", message)
             user = await reply.get_sender()
         else:
             user = await reply.get_sender()
 
         username = telethon.utils.get_display_name(user)
         if reply.fwd_from is not None and reply.fwd_from.post_author is not None:
-            username += f" ({reply.fwd_from.post_author})"
+            username += " ({})".format(reply.fwd_from.post_author)
         user_id = reply.from_id
 
         if reply.fwd_from:
             if reply.fwd_from.saved_from_peer:
                 profile_photo_url = reply.forward.chat
-                admintitle = self.strings["channel"]
+                admintitle = self.strings("channel", message)
             elif reply.fwd_from.from_name:
                 username = reply.fwd_from.from_name
                 profile_photo_url = None
@@ -122,7 +117,7 @@ class QuotesMod(loader.Module):
                 profile_photo_url = reply.forward.sender.id
                 admintitle = ""
             elif reply.forward.chat:
-                admintitle = self.strings["channel"]
+                admintitle = self.strings("channel", message)
                 profile_photo_url = user
         else:
             if isinstance(reply.to_id, telethon.tl.types.PeerUser) is False:
@@ -130,9 +125,9 @@ class QuotesMod(loader.Module):
                     user = await self.client(telethon.tl.functions.channels.GetParticipantRequest(message.chat_id,
                                                                                                   user))
                     if isinstance(user.participant, telethon.tl.types.ChannelParticipantCreator):
-                        admintitle = user.participant.rank or self.strings["creator"]
+                        admintitle = user.participant.rank or self.strings("creator", message)
                     elif isinstance(user.participant, telethon.tl.types.ChannelParticipantAdmin):
-                        admintitle = user.participant.rank or self.strings["admin"]
+                        admintitle = user.participant.rank or self.strings("admin", message)
                     user = user.users[0]
                 except telethon.errors.rpcerrorlist.UserNotParticipantError:
                     pass
@@ -145,19 +140,19 @@ class QuotesMod(loader.Module):
             profile_photo_url = ""
 
         if user_id is not None:
-            username_color = self.config["username_colors"][user_id % 7]
+            username_color = self.config["USERNAME_COLORS"][user_id % 7]
         else:
-            username_color = self.config["default_username_color"]
+            username_color = self.config["DEFAULT_USERNAME_COLOR"]
 
         reply_username = ""
         reply_text = ""
-        if reply.is_reply is True:
-            reply_to = await reply.get_reply_message()
+        reply_to = await reply.get_reply_message()
+        if reply_to:
             reply_peer = None
-            if reply_to.fwd_from is not None:
-                if reply_to.forward.chat is not None:
+            if reply_to.fwd_from:
+                if reply_to.forward.chat:
                     reply_peer = reply_to.forward.chat
-                elif reply_to.fwd_from.from_id is not None:
+                elif reply_to.fwd_from.from_id:
                     try:
                         user_id = reply_to.fwd_from.from_id
                         user = await self.client(telethon.tl.functions.users.GetFullUserRequest(user_id))
@@ -166,16 +161,16 @@ class QuotesMod(loader.Module):
                         pass
                 else:
                     reply_username = reply_to.fwd_from.from_name
-            elif reply_to.from_id is not None:
+            elif not reply_to.from_id:
                 reply_user = await self.client(telethon.tl.functions.users.GetFullUserRequest(reply_to.from_id))
                 reply_peer = reply_user.user
 
-            if reply_username is None or reply_username == "":
+            if not reply_username:
                 reply_username = telethon.utils.get_display_name(reply_peer)
             reply_text = reply_to.message
 
         date = ""
-        if reply.fwd_from is not None:
+        if reply.fwd_from:
             date = reply.fwd_from.date.strftime("%H:%M")
         else:
             date = reply.date.strftime("%H:%M")
@@ -191,39 +186,39 @@ class QuotesMod(loader.Module):
             "ReplyText": reply_text,
             "Date": date,
             "Template": args[0] if len(args) > 0 else "default",
-            "APIKey": self.config["api_token"]
+            "APIKey": self.config["API_TOKEN"]
         })
 
-        resp = await utils.run_sync(requests.post, self.config["api_url"] + "/api/v2/quote", data=request)
+        resp = await utils.run_sync(requests.post, self.config["API_URL"] + "/api/v2/quote", data=request)
         resp.raise_for_status()
         resp = await utils.run_sync(resp.json)
 
         if resp["status"] == 500:
-            return await utils.answer(message, self.strings["server_error"])
+            return await utils.answer(message, self.strings("server_error", message))
         elif resp["status"] == 401:
             if resp["message"] == "ERROR_TOKEN_INVALID":
-                return await utils.answer(message, self.strings["invalid_token"])
+                return await utils.answer(message, self.strings("invalid_token", message))
             else:
                 raise ValueError("Invalid response from server", resp)
         elif resp["status"] == 403:
             if resp["message"] == "ERROR_UNAUTHORIZED":
-                return await utils.answer(message, self.strings["unauthorized"])
+                return await utils.answer(message, self.strings("unauthorized", message))
             else:
                 raise ValueError("Invalid response from server", resp)
         elif resp["status"] == 404:
             if resp["message"] == "ERROR_TEMPLATE_NOT_FOUND":
-                newreq = await utils.run_sync(requests.post, self.config["api_url"] + "/api/v1/getalltemplates", data={
-                    "token": self.config["api_token"]
+                newreq = await utils.run_sync(requests.post, self.config["API_URL"] + "/api/v1/getalltemplates", data={
+                    "token": self.config["API_TOKEN"]
                 })
                 newreq = await utils.run_sync(newreq.json)
 
                 if newreq["status"] == "NOT_ENOUGH_PERMISSIONS":
-                    return await utils.answer(message, self.strings["not_enough_permissions"])
+                    return await utils.answer(message, self.strings("not_enough_permissions", message))
                 elif newreq["status"] == "SUCCESS":
-                    templates = self.strings["delimiter"].join(newreq["message"])
-                    return await utils.answer(message, self.strings["templates"].format(templates))
+                    templates = self.strings("delimiter", message).join(newreq["message"])
+                    return await utils.answer(message, self.strings("templates", message).format(templates))
                 elif newreq["status"] == "INVALID_TOKEN":
-                    return await utils.answer(message, self.strings["invalid_token"])
+                    return await utils.answer(message, self.strings("invalid_token", message))
                 else:
                     raise ValueError("Invalid response from server", newreq)
             else:
@@ -231,7 +226,7 @@ class QuotesMod(loader.Module):
         elif resp["status"] != 200:
             raise ValueError("Invalid response from server", resp)
 
-        req = await utils.run_sync(requests.get, self.config["api_url"] + "/cdn/" + resp["message"])
+        req = await utils.run_sync(requests.get, self.config["API_URL"] + "/cdn/" + resp["message"])
         req.raise_for_status()
         file = BytesIO(req.content)
         file.seek(0)
@@ -240,7 +235,7 @@ class QuotesMod(loader.Module):
             if args[1] == "file":
                 await utils.answer(message, file)
             elif args[1] == "force_file":
-                file.name = self.strings["filename"]
+                file.name = self.strings("filename", message)
                 await utils.answer(message, file, force_document=True)
         else:
             img = await utils.run_sync(Image.open, file)
@@ -251,7 +246,7 @@ class QuotesMod(loader.Module):
                 try:
                     await utils.answer(message, sticker)
                 except telethon.errors.rpcerrorlist.ChatSendStickersForbiddenError:
-                    await utils.answer(message, self.strings["cannot_send_stickers"])
+                    await utils.answer(message, self.strings("cannot_send_stickers", message))
                 file.close()
 
 
