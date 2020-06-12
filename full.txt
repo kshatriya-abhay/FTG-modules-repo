@@ -40,4 +40,3 @@ transfersh
 corona
 orangefox
 afk
-nopm
