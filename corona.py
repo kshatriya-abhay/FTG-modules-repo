@@ -40,7 +40,7 @@ class CoronaReportsMod(loader.Module):
         else:
             country = args
             
-        await message.edit("<code>Visiting  Wuhan...</code>")
+        message = await utils.answer(message, "<code>Visiting  Wuhan...</code>")
 
         url = "https://covid19.mathdro.id/api/countries/" + country
         tries = 0
@@ -49,7 +49,7 @@ class CoronaReportsMod(loader.Module):
         while response.status_code == 400 and tries < 10:
             response = requests.get(url)
             tries += 1
-            await message.edit("<code>Try #" + str(tries) + "...</code>")
+            await utils.answer(message, "<code>Try #" + str(tries) + "...</code>")
 
         jsonDumps = json.dumps(response.json(), sort_keys=True)
         jsonResponse = json.loads(jsonDumps)
@@ -81,5 +81,4 @@ class CoronaReportsMod(loader.Module):
             msg = "<code>Bad request</code>"
         else:
             msg = "<code>Unknown error</code>"
-        await message.edit(msg)
-        
+        await utils.answer(message, msg)
