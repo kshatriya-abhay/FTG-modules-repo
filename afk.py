@@ -20,6 +20,8 @@ import logging
 import datetime
 import time
 
+from telethon import types
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +58,8 @@ class AFKMod(loader.Module):
         await utils.answer(message, self.strings("back", message))
 
     async def watcher(self, message):
+        if not isinstance(message, types.Message):
+            return
         if message.mentioned or getattr(message.to_id, "user_id", None) == self._me.id:
             afk_state = self.get_afk()
             if not afk_state:
