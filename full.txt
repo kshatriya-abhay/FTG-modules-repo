@@ -40,3 +40,4 @@ transfersh
 corona
 orangefox
 afk
+pokemon
